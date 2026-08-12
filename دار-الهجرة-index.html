@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دار الهجرة التعليمي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- Firebase (compat SDK - no build step needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<style>
+  :root{
+    --navy:#0F2A4A;
+    --navy-light:#1C3E63;
+    --navy-lighter:#274A73;
+    --gold:#D4AF37;
+    --gold-light:#E8CB6E;
+    --bg:#F8F8F6;
+    --card:#FFFFFF;
+    --text:#1A2733;
+    --text-mute:#5C6B7A;
+    --border:#E6E2D8;
+    --green:#2E7D5B;
+    --red:#B3453A;
+    --radius:14px;
+    --shadow: 0 4px 20px rgba(15,42,74,0.08);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:inherit;cursor:pointer;border:none;}
+  .hidden{display:none !important;}
+  input,select,textarea{font-family:inherit;}
+
+  /* ---------- Landing ---------- */
+  #landing{min-height:100vh;display:flex;flex-direction:column;}
+  .topbar{background:var(--navy);color:#fff;padding:18px 6vw;display:flex;align-items:center;justify-content:space-between;}
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand-emblem{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+  .brand-name{font-weight:800;font-size:1.15rem;line-height:1.3;}
+  .brand-sub{font-size:.78rem;color:var(--gold-light);font-weight:600;letter-spacing:.5px;}
+  .btn{padding:10px 26px;border-radius:999px;font-weight:700;font-size:.92rem;transition:.15s;}
+  .btn-gold{background:var(--gold);color:var(--navy);}
+  .btn-gold:hover{background:var(--gold-light);}
+  .btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.4);color:#fff;}
+  .btn-outline:hover{border-color:var(--gold);color:var(--gold-light);}
+
+  .hero{background:var(--navy);color:#fff;padding:70px 6vw 90px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{content:"";position:absolute;inset:0;background:
+    radial-gradient(circle at 15% 20%, rgba(212,175,55,.10) 0, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(212,175,55,.08) 0, transparent 40%);}
+  .hero-emblem{width:96px;height:96px;margin:0 auto 22px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;}
+  .hero h1{font-size:2.4rem;font-weight:900;margin:0 0 6px;position:relative;}
+  .hero h1 span{color:var(--gold-light);}
+  .hero p.tagline{color:var(--gold-light);font-weight:700;font-size:1.1rem;margin:0 0 26px;position:relative;}
+  .divider-gold{width:70px;height:3px;background:var(--gold);margin:18px auto;border-radius:2px;}
+  .hero-strap{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(212,175,55,.35);padding:10px 28px;border-radius:999px;font-weight:700;margin-top:10px;position:relative;}
+
+  .services{padding:60px 6vw;max-width:1100px;margin:0 auto;}
+  .services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:22px;margin-top:36px;}
+  .service-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px 14px;text-align:center;box-shadow:var(--shadow);transition:.2s;}
+  .service-card:hover{transform:translateY(-4px);border-color:var(--gold);}
+  .service-icon{width:64px;height:64px;border-radius:50%;background:var(--navy);color:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;border:2px solid var(--gold);}
+  .service-title{font-weight:700;font-size:.95rem;}
+
+  footer.site-footer{background:var(--navy);color:#dfe6ee;padding:36px 6vw;margin-top:auto;}
+  .footer-grid{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;max-width:1100px;margin:0 auto;align-items:center;}
+  .footer-item{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.92rem;}
+  .footer-item .ic{color:var(--gold-light);}
+
+  /* ---------- Auth screens ---------- */
+  #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy);padding:20px;position:relative;}
+  #auth-screen::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 30%, rgba(212,175,55,.10) 0, transparent 45%);}
+  .auth-card{background:var(--card);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.35);width:100%;max-width:460px;padding:38px 32px;position:relative;max-height:92vh;overflow-y:auto;}
+  .auth-emblem{width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;}
+  .auth-card h2{text-align:center;margin:0 0 4px;font-size:1.3rem;color:var(--navy);font-weight:800;}
+  .auth-card p.sub{text-align:center;color:var(--text-mute);margin:0 0 24px;font-size:.88rem;}
+  .role-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px;}
+  .role-tab{padding:10px 4px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);font-size:.78rem;font-weight:700;color:var(--text-mute);text-align:center;transition:.15s;}
+  .role-tab.active{background:var(--navy);color:var(--gold-light);border-color:var(--navy);}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:.85rem;font-weight:700;margin-bottom:6px;color:var(--navy);}
+  .field input,.field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.92rem;background:var(--bg);}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--gold);}
+  .demo-hint{background:#FBF6E8;border:1px dashed var(--gold);border-radius:10px;padding:10px 12px;font-size:.78rem;color:var(--navy-light);margin-bottom:18px;line-height:1.7;}
+  .auth-btn{width:100%;padding:13px;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;font-size:1rem;}
+  .auth-btn:hover{background:var(--navy-light);}
+  .auth-btn:disabled{opacity:.6;cursor:not-allowed;}
+  .back-link{display:block;text-align:center;margin-top:16px;color:var(--text-mute);font-size:.85rem;font-weight:600;cursor:pointer;}
+  .back-link:hover{color:var(--navy);}
+  .err-msg{color:var(--red);font-size:.82rem;margin:-8px 0 14px;font-weight:700;}
+  .ok-msg{color:var(--green);font-size:.82rem;margin:-8px 0 14px;font-weight:700;}
+
+  /* ---------- App shell ---------- */
+  #app{display:none;min-height:100vh;grid-template-columns:260px 1fr;}
+  #app.show{display:grid;}
+  .sidebar{background:var(--navy);color:#fff;padding:24px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+  .side-brand{display:flex;align-items:center;gap:12px;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.12);}
+  .side-emblem{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold-light),var(--gold));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+  .side-brand-name{font-weight:800;font-size:.95rem;line-height:1.3;}
+  .side-role-badge{display:inline-block;margin-top:4px;background:rgba(212,175,55,.18);color:var(--gold-light);font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:999px;}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;font-weight:700;font-size:.9rem;color:#c9d4e0;margin-bottom:4px;transition:.15s;cursor:pointer;}
+  .nav-item .ic{font-size:1.1rem;}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav-item.active{background:var(--gold);color:var(--navy);}
+  .sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);}
+  .logout-btn{width:100%;padding:10px;border-radius:10px;background:rgba(179,69,58,.18);color:#f2b3ac;font-weight:700;font-size:.85rem;}
+  .logout-btn:hover{background:rgba(179,69,58,.3);}
+
+  .main{padding:30px 4vw;overflow-y:auto;}
+  .main-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
+  .main-header h1{margin:0;font-size:1.5rem;color:var(--navy);font-weight:800;}
+  .main-header p{margin:2px 0 0;color:var(--text-mute);font-size:.9rem;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-bottom:30px;}
+  .stat-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border-inline-start:4px solid var(--gold);}
+  .stat-num{font-size:1.7rem;font-weight:900;color:var(--navy);}
+  .stat-label{font-size:.82rem;color:var(--text-mute);font-weight:600;margin-top:4px;}
+
+  .panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:24px;}
+  .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .panel-head h3{margin:0;font-size:1.05rem;color:var(--navy);font-weight:800;}
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:right;font-size:.8rem;color:var(--text-mute);font-weight:700;padding:8px 6px;border-bottom:2px solid var(--border);}
+  td{padding:10px 6px;border-bottom:1px solid var(--border);font-size:.88rem;}
+  .badge{display:inline-block;padding:3px 12px;border-radius:999px;font-size:.75rem;font-weight:700;}
+  .badge-gold{background:rgba(212,175,55,.15);color:#8a6d1a;}
+  .badge-green{background:rgba(46,125,91,.13);color:var(--green);}
+  .badge-red{background:rgba(179,69,58,.13);color:var(--red);}
+  .small-btn{padding:8px 18px;border-radius:8px;font-weight:700;font-size:.82rem;}
+  .small-btn.gold{background:var(--gold);color:var(--navy);}
+  .small-btn.gold:hover{background:var(--gold-light);}
+  .small-btn.outline{background:transparent;border:1.5px solid var(--border);color:var(--text-mute);}
+  .small-btn.outline:hover{border-color:var(--navy);color:var(--navy);}
+  .small-btn.danger{background:rgba(179,69,58,.1);color:var(--red);}
+  .small-btn.danger:hover{background:rgba(179,69,58,.2);}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;align-items:end;}
+  .form-grid .field{margin-bottom:0;}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--text-mute);}
+  .empty-state .ic{font-size:2.4rem;margin-bottom:10px;}
+  .attend-dots{display:flex;gap:6px;flex-wrap:wrap;}
+  .dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;}
+  .dot.done{background:var(--green);color:#fff;}
+  .dot.pending{background:var(--bg);border:1.5px solid var(--border);}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 26px;border-radius:999px;font-weight:700;font-size:.88rem;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:999;opacity:0;transition:.25s;pointer-events:none;}
+  .toast.show{opacity:1;bottom:34px;}
+
+  @media(max-width:820px){
+    #app.show{display:flex;flex-direction:column;}
+    .sidebar{position:static;height:auto;flex-direction:row;overflow-x:auto;align-items:center;padding:14px;}
+    .side-brand{display:none;}
+    .nav-item{white-space:nowrap;margin-bottom:0;}
+    .sidebar-footer{margin-top:0;padding-top:0;border-top:none;margin-inline-start:auto;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LANDING ============ -->
+<div id="landing">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-emblem">🎓</div>
+      <div>
+        <div class="brand-name">دار الهجرة التعليمي</div>
+        <div class="brand-sub">لخدمات الطلبة</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline" onclick="showAuth('login')">تسجيل الدخول</button>
+      <button class="btn btn-gold" onclick="showAuth('register')">إنشاء حساب</button>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-emblem">🎓</div>
+    <h1>دار الهجرة <span>التعليمي</span></h1>
+    <p class="tagline">لخدمات الطلبة</p>
+    <div class="divider-gold"></div>
+    <div class="hero-strap">كل ما يحتاجه الطالب في منصة واحدة</div>
+  </div>
+
+  <div class="services">
+    <div class="services-grid">
+      <div class="service-card"><div class="service-icon">🎓</div><div class="service-title">دروس اونلاين</div></div>
+      <div class="service-card"><div class="service-icon">📖</div><div class="service-title">مذكرات وملفات</div></div>
+      <div class="service-card"><div class="service-icon">📝</div><div class="service-title">اختبارات وتدريبات</div></div>
+      <div class="service-card"><div class="service-icon">🖥️</div><div class="service-title">فيديوهات تعليمية</div></div>
+      <div class="service-card"><div class="service-icon">💬</div><div class="service-title">متابعة واستشارات</div></div>
+      <div class="service-card"><div class="service-icon">📈</div><div class="service-title">تقارير وتقييم</div></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-item"><span class="ic">📞</span> <span dir="ltr" style="unicode-bidi:isolate;">01024647477</span></div>
+      <div class="footer-item"><span class="ic">👤</span> إدارة: محمد حرزالله متولي</div>
+      <div class="footer-item"><span class="ic">📍</span> الخطارة - شارع البحر - خلف مدرسة النيل الابتدائية</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ AUTH ============ -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-card">
+    <div class="auth-emblem">🎓</div>
+    <h2 id="auth-title">تسجيل الدخول</h2>
+    <p class="sub" id="auth-sub">مرحبًا بعودتك</p>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form">
+      <div class="field"><label>البريد الإلكتروني</label><input type="email" id="login-email" placeholder="example@mail.com"></div>
+      <div class="field"><label>كلمة المرور</label>
+        <div style="position:relative;">
+          <input type="password" id="login-password" placeholder="••••••••" style="padding-left:44px;">
+          <button type="button" onclick="togglePwd('login-password',this)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);background:none;padding:4px 8px;font-size:1rem;color:var(--text-mute);">👁️</button>
+        </div>
+      </div>
+      <div class="err-msg hidden" id="login-err"></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">دخول</button>
+      <div class="back-link" onclick="showAuth('register')">مستخدم جديد؟ إنشاء حساب</div>
+      <div class="back-link" onclick="showLanding()">⇦ رجوع للصفحة الرئيسية</div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="register-form" class="hidden">
+      <div class="role-tabs" style="grid-template-columns:repeat(5,1fr);">
+        <div class="role-tab active" data-role="student" onclick="selectRegRole('student')">طالب</div>
+        <div class="role-tab" data-role="teacher" onclick="selectRegRole('teacher')">مدرس</div>
+        <div class="role-tab" data-role="parent" onclick="selectRegRole('parent')">ولي أمر</div>
+        <div class="role-tab" data-role="secretary" onclick="selectRegRole('secretary')">سكرتيرة</div>
+        <div class="role-tab" data-role="admin" onclick="selectRegRole('admin')">إدارة</div>
+      </div>
+
+      <div class="field"><label>الاسم بالكامل</label><input type="text" id="reg-name"></div>
+      <div class="field"><label>البريد الإلكتروني</label><input type="email" id="reg-email"></div>
+      <div class="field"><label>رقم الهاتف</label><input type="text" id="reg-phone"></div>
+      <div class="field"><label>كلمة المرور</label>
+        <div style="position:relative;">
+          <input type="password" id="reg-password" placeholder="6 أحرف على الأقل" style="padding-left:44px;">
+          <button type="button" onclick="togglePwd('reg-password',this)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);background:none;padding:4px 8px;font-size:1rem;color:var(--text-mute);">👁️</button>
+        </div>
+      </div>
+
+      <div id="reg-extra-student" class="reg-extra">
+        <div class="field"><label>المرحلة الدراسية</label>
+          <select id="reg-student-stage">
+            <option value="ابتدائي">ابتدائي</option>
+            <option value="إعدادي">إعدادي</option>
+            <option value="ثانوي">ثانوي</option>
+            <option value="بكالوريا">بكالوريا</option>
+          </select>
+        </div>
+        <div class="field"><label>الصف الدراسي (اختياري)</label><input type="text" id="reg-student-grade" placeholder="مثال: الصف الثالث الثانوي"></div>
+      </div>
+
+      <div id="reg-extra-teacher" class="reg-extra hidden">
+        <div class="field"><label>المادة</label><input type="text" id="reg-teacher-subject" placeholder="مثال: رياضيات"></div>
+        <div class="field"><label>سعر الحصة (جنيه)</label><input type="number" min="0" id="reg-teacher-price" placeholder="مثال: 30"></div>
+        <div class="field"><label>المؤهل / سنوات الخبرة (اختياري)</label><input type="text" id="reg-teacher-exp"></div>
+        <div class="demo-hint">بعد التسجيل، حسابك كمدرس هيكون "قيد المراجعة" لحد ما الإدارة توافق عليه.</div>
+      </div>
+
+      <div id="reg-extra-parent" class="reg-extra hidden">
+        <div class="field"><label>البريد الإلكتروني لحساب ابنك/ابنتك على المنصة</label><input type="email" id="reg-parent-child-email"></div>
+        <div class="demo-hint">لازم يكون الطالب عامل حساب على المنصة الأول.</div>
+      </div>
+
+      <div id="reg-extra-secretary" class="reg-extra hidden">
+        <div class="demo-hint">بعد التسجيل، حسابك هيكون "قيد المراجعة" لحد ما صاحب السنتر يعتمده. بعد الاعتماد هتقدري بس تسجلي مدفوعات الطلاب، ومفيش حاجة تانية هتشوفيها أو تقدري تعمليها.</div>
+      </div>
+
+      <div id="reg-extra-admin" class="reg-extra hidden">
+        <div class="field"><label>كود الإدارة</label><input type="text" id="reg-admin-code" placeholder="اكتبي الكود اللي معاكي من صاحب السنتر"></div>
+        <div class="demo-hint">الكود ده بيديهولك صاحب السنتر بس، وبيتقفل تلقائيًا بعد أول استخدام.</div>
+      </div>
+
+
+      <div class="err-msg hidden" id="reg-err"></div>
+      <button class="auth-btn" id="reg-btn" onclick="doRegister()">إنشاء الحساب</button>
+      <div class="back-link" onclick="showAuth('login')">عندك حساب؟ سجّل الدخول</div>
+      <div class="back-link" onclick="showLanding()">⇦ رجوع للصفحة الرئيسية</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <div class="sidebar">
+    <div class="side-brand">
+      <div class="side-emblem">🎓</div>
+      <div>
+        <div class="side-brand-name">دار الهجرة</div>
+        <div class="side-role-badge" id="side-role-badge">-</div>
+      </div>
+    </div>
+    <div id="nav-items"></div>
+    <div class="sidebar-footer">
+      <button class="logout-btn" style="background:rgba(255,255,255,.12);margin-bottom:8px;" onclick="toggleLang()" id="lang-toggle-btn">🌐 English</button>
+      <button class="logout-btn" onclick="doLogout()">🚪 تسجيل الخروج</button>
+    </div>
+  </div>
+  <div class="main">
+    <div id="main-content">
+      <div class="empty-state"><div class="ic">⏳</div>جارِ التحميل...</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   ⚠️ الخطوة الوحيدة اللي محتاجة تعمليها في الكود ده:
+   حطي بيانات مشروع Firebase بتاعك هنا (هتلاقيها في Project settings)
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAAOLfAgL_0ADJxJl0bRe_8LxU7yOjJ_nc",
+  authDomain: "dar-al-hijra-academy.firebaseapp.com",
+  projectId: "dar-al-hijra-academy",
+  storageBucket: "dar-al-hijra-academy.firebasestorage.app",
+  messagingSenderId: "1008697702944",
+  appId: "1:1008697702944:web:fd40910d96516bc1a61a45"
+};
+
+// (تسجيل الإدارة ممكن بس عن طريق "كود دعوة" سري بتحطيه إنتي في مجموعة adminInvites
+//  جوه Firestore Console، والكود ده بيتقفل تلقائيًا بعد أول استخدام)
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;   // { uid, name, role, email, ...profile }
+let regRole = 'student';
+let activePage = 'dashboard';
+let chatUnsub = null;
+
+/* ---------------- UI helpers ---------------- */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function showLanding(){
+  document.getElementById('landing').classList.remove('hidden');
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('show');
+}
+function showAuth(mode){
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-form').classList.toggle('hidden', mode!=='login');
+  document.getElementById('register-form').classList.toggle('hidden', mode!=='register');
+  document.getElementById('auth-title').textContent = mode==='login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد';
+  document.getElementById('auth-sub').textContent = mode==='login' ? 'مرحبًا بعودتك' : 'اختاري نوع الحساب';
+}
+function selectRegRole(role){
+  regRole = role;
+  document.querySelectorAll('.role-tab').forEach(t=>t.classList.toggle('active', t.dataset.role===role));
+  document.querySelectorAll('.reg-extra').forEach(e=>e.classList.add('hidden'));
+  document.getElementById('reg-extra-'+role).classList.remove('hidden');
+}
+function togglePwd(inputId, btn){
+  const el = document.getElementById(inputId);
+  const showing = el.type === 'text';
+  el.type = showing ? 'password' : 'text';
+  btn.textContent = showing ? '👁️' : '🙈';
+}
+
+/* ---------------- Auth ---------------- */
+async function doRegister(){
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const adminCode = document.getElementById('reg-admin-code').value.trim();
+  const errEl = document.getElementById('reg-err');
+  errEl.classList.add('hidden');
+
+  if(!name || !email || !password){
+    errEl.textContent = 'من فضلك املأ الاسم والإيميل وكلمة المرور';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  if(regRole==='admin' && !adminCode){
+    errEl.textContent = 'من فضلك اكتبي كود الإدارة';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true; btn.textContent = 'جارِ الإنشاء...';
+
+  let cred = null;
+  try{
+    cred = await auth.createUserWithEmailAndPassword(email, password);
+    const uid = cred.user.uid;
+
+    if(regRole==='admin'){
+      // تسجيل كإدارة بكود دعوة سري — بيتقفل الكود أول ما يتستخدم مرة واحدة
+      const inviteRef = db.collection('adminInvites').doc(adminCode);
+      await db.runTransaction(async (tx)=>{
+        const inviteDoc = await tx.get(inviteRef);
+        if(!inviteDoc.exists || inviteDoc.data().used){
+          throw new Error('كود الإدارة غير صحيح أو اتستخدم قبل كده');
+        }
+        tx.set(db.collection('users').doc(uid), {
+          name, email, phone, role:'admin', usedInviteCode: adminCode,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        tx.update(inviteRef, {used:true, usedBy:uid, usedAt: firebase.firestore.FieldValue.serverTimestamp()});
+      });
+      toast('تم إنشاء حساب الإدارة بنجاح');
+    } else {
+      const profile = { name, email, phone, role: regRole, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+      if(regRole==='student'){
+        profile.stage = document.getElementById('reg-student-stage').value;
+        profile.grade = document.getElementById('reg-student-grade').value.trim();
+      } else if(regRole==='teacher'){
+        profile.subject = document.getElementById('reg-teacher-subject').value.trim();
+        profile.sessionPrice = parseFloat(document.getElementById('reg-teacher-price').value)||0;
+        profile.experience = document.getElementById('reg-teacher-exp').value.trim();
+        profile.approved = false;
+      } else if(regRole==='parent'){
+        profile.childEmail = document.getElementById('reg-parent-child-email').value.trim();
+      } else if(regRole==='secretary'){
+        profile.approved = false;
+      }
+      await db.collection('users').doc(uid).set(profile);
+      toast(regRole==='secretary' ? 'تم التسجيل، حسابك دلوقتي قيد المراجعة من صاحب السنتر' : 'تم إنشاء الحساب بنجاح');
+    }
+  }catch(e){
+    if(cred && cred.user){ await cred.user.delete().catch(()=>{}); }
+    errEl.textContent = e.message || translateAuthError(e);
+    errEl.classList.remove('hidden');
+  }finally{
+    btn.disabled = false; btn.textContent = 'إنشاء الحساب';
+  }
+}
+
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-err');
+  errEl.classList.add('hidden');
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'جارِ الدخول...';
+  try{
+    await auth.signInWithEmailAndPassword(email, password);
+  }catch(e){
+    errEl.textContent = translateAuthError(e);
+    errEl.classList.remove('hidden');
+  }finally{
+    btn.disabled = false; btn.textContent = 'دخول';
+  }
+}
+
+function doLogout(){
+  if(chatUnsub){ chatUnsub(); chatUnsub=null; }
+  auth.signOut();
+}
+
+function translateAuthError(e){
+  const c = e.code || '';
+  if(c.includes('email-already-in-use')) return 'الإيميل ده مستخدم قبل كده';
+  if(c.includes('invalid-email')) return 'صيغة الإيميل مش صحيحة';
+  if(c.includes('weak-password')) return 'كلمة المرور لازم تكون 6 أحرف على الأقل';
+  if(c.includes('user-not-found') || c.includes('wrong-password') || c.includes('invalid-credential')) return 'الإيميل أو كلمة المرور غلط';
+  return 'حصل خطأ، حاولي تاني';
+}
+
+auth.onAuthStateChanged(async (user)=>{
+  if(user){
+    const doc = await db.collection('users').doc(user.uid).get();
+    if(!doc.exists){ toast('حصل خطأ في تحميل الحساب'); return; }
+    currentUser = { uid: user.uid, ...doc.data() };
+    if(currentUser.role==='parent' && currentUser.childEmail && !currentUser.childId){
+      const q = await db.collection('users').where('email','==',currentUser.childEmail).where('role','==','student').limit(1).get();
+      if(!q.empty){
+        currentUser.childId = q.docs[0].id;
+        await db.collection('users').doc(user.uid).update({childId: currentUser.childId});
+      }
+    }
+    document.getElementById('landing').classList.add('hidden');
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app').classList.add('show');
+    document.getElementById('side-role-badge').textContent = roleLabel(currentUser.role);
+    buildNav();
+    activePage = 'dashboard';
+    renderPage();
+  } else {
+    currentUser = null;
+    document.getElementById('app').classList.remove('show');
+    showLanding();
+  }
+});
+
+function roleLabel(r){
+  return {admin:'إدارة السنتر', secretary:'السكرتارية', teacher:'مدرس', student:'طالب', parent:'ولي أمر'}[r] || r;
+}
+
+/* ---------------- Nav ---------------- */
+const NAV = {
+  admin: [
+    ['dashboard','📊','الرئيسية'],
+    ['schedule','🗓️','جدول المدرسين'],
+    ['teachers','👨‍🏫','المدرسون'],
+    ['students','👨‍🎓','الطلاب'],
+    ['groups','📚','المجموعات'],
+    ['payments','💰','المدفوعات'],
+    ['staff','🧑‍💼','الموظفين'],
+    ['homework','📝','الواجبات'],
+    ['announcements','📢','الإعلانات'],
+  ],
+  secretary: [
+    ['dashboard','📊','الرئيسية'],
+    ['schedule','🗓️','جدول المدرسين'],
+    ['teachers','👨‍🏫','المدرسون'],
+    ['students','👨‍🎓','الطلاب'],
+    ['payments','💰','المدفوعات'],
+  ],
+  teacher: [
+    ['dashboard','📊','الرئيسية'],
+    ['schedule','🗓️','جدولي'],
+    ['groups','📚','مجموعاتي'],
+    ['attendance','✅','تسجيل الحضور'],
+    ['homework','📝','الواجبات'],
+    ['chat','💬','شات المجموعة'],
+  ],
+  student: [
+    ['dashboard','📊','الرئيسية'],
+    ['groups','📚','مجموعتي'],
+    ['attendance','✅','سجل حضوري'],
+    ['homework','📝','الواجبات'],
+    ['notifications','🔔','الإشعارات'],
+    ['chat','💬','شات المجموعة'],
+  ],
+  parent: [
+    ['dashboard','📊','الرئيسية'],
+    ['attendance','✅','الحضور'],
+    ['homework','📝','الواجبات'],
+    ['notifications','🔔','الإشعارات'],
+    ['announcements','📢','الإعلانات'],
+  ]
+};
+
+/* ---------------- Language toggle (interface only — data stays Arabic) ---------------- */
+let LANG = 'ar';
+const TR = {
+  'الرئيسية':'Home','المدرسون':'Teachers','الطلاب':'Students','المجموعات':'Groups',
+  'المدفوعات':'Payments','الموظفين':'Staff','الواجبات':'Homework','الإعلانات':'Announcements',
+  'مجموعاتي':'My Groups','تسجيل الحضور':'Attendance','شات المجموعة':'Group Chat',
+  'مجموعتي':'My Group','سجل حضوري':'My Attendance','الإشعارات':'Notifications','الحضور':'Attendance',
+  'لوحة الإدارة':'Admin Dashboard','دار الهجرة التعليمي':'Dar Al-Hijra Educational',
+  'حضور ابنك':'Attendance','مدفوعات اليوم':'Today Payments',
+};
+function t(str){ return (LANG==='en' && TR[str]) ? TR[str] : str; }
+function toggleLang(){
+  LANG = LANG==='en' ? 'ar' : 'en';
+  document.documentElement.dir = LANG==='en' ? 'ltr' : 'rtl';
+  document.documentElement.lang = LANG;
+  document.getElementById('lang-toggle-btn').textContent = LANG==='en' ? '🌐 العربية' : '🌐 English';
+  buildNav();
+  renderPage();
+}
+function buildNav(){
+  const items = NAV[currentUser.role] || [];
+  const el = document.getElementById('nav-items');
+  el.innerHTML = items.map(([key,ic,label])=>
+    `<div class="nav-item ${key===activePage?'active':''}" data-key="${key}" onclick="goPage('${key}')"><span class="ic">${ic}</span> ${t(label)}</div>`
+  ).join('');
+}
+function goPage(key){
+  activePage = key;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.key===key));
+  if(chatUnsub){ chatUnsub(); chatUnsub=null; }
+  renderPage();
+}
+
+/* ---------------- Shared UI bits ---------------- */
+function pageHeader(title, sub){
+  return `<div class="main-header"><div><h1>${t(title)}</h1>${sub?`<p>${t(sub)}</p>`:''}</div></div>`;
+}
+function attendDots(done, total){
+  let out = '<div class="attend-dots">';
+  for(let i=0;i<total;i++){
+    out += `<div class="dot ${i<done?'done':'pending'}">${i<done?'✓':''}</div>`;
+  }
+  out += '</div>';
+  return out;
+}
+function setMain(html){
+  document.getElementById('main-content').innerHTML = html;
+}
+
+/* ---------------- Center fee (settings) — now per educational stage ---------------- */
+const STAGES = ['ابتدائي','إعدادي','ثانوي','بكالوريا'];
+let centerFeesCache = null;
+async function getCenterFees(){
+  if(centerFeesCache!==null) return centerFeesCache;
+  const doc = await db.collection('settings').doc('general').get();
+  const data = doc.exists ? (doc.data().centerFeeByStage||{}) : {};
+  centerFeesCache = {};
+  STAGES.forEach(s=> centerFeesCache[s] = data[s]||0);
+  return centerFeesCache;
+}
+function priceLine(teacherPrice, stage, feesMap){
+  const tp = teacherPrice||0;
+  const centerFee = (feesMap && stage) ? (feesMap[stage]||0) : 0;
+  const total = tp + centerFee;
+  if(!tp && !centerFee) return '<span style="color:var(--text-mute);font-size:.82rem;">السعر لسه ماتحددش</span>';
+  return `<span style="font-weight:700;color:var(--navy);">${tp} + ${centerFee} السنتر = ${total} جنيه / الحصة</span>${stage?` <span style="color:var(--text-mute);font-size:.78rem;">(${stage})</span>`:''}`;
+}
+
+function paymentBadge(g, userId){
+  const info = (g.paidStudents||{})[userId];
+  if(info && info.paid) return `<span class="badge badge-green">✔ مدفوع (${info.date})</span>`;
+  return `<span class="badge badge-red">عليه دفع</span>`;
+}
+function scheduleTable(groups){
+  if(!groups.length) return '';
+  const rows = groups.map(g=>`<tr><td>${g.subject}</td><td>${g.teacherName}</td><td>${g.day}</td><td>${g.time}</td></tr>`).join('');
+  return `<div class="panel"><div class="panel-head"><h3>🗓️ جدولي الأسبوعي</h3></div>
+    <table><thead><tr><th>المادة</th><th>المدرس</th><th>الأيام</th><th>الميعاد</th></tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+/* ---------------- Today's schedule (weekday-aware) ---------------- */
+const WEEKDAYS = ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+function getTodayWeekday(){
+  // JS getDay(): 0=Sunday...6=Saturday -> map to our Saturday-first array
+  const jsDay = new Date().getDay();
+  const map = {6:'السبت',0:'الأحد',1:'الاثنين',2:'الثلاثاء',3:'الأربعاء',4:'الخميس',5:'الجمعة'};
+  return map[jsDay];
+}
+PAGES.teacher.schedule = async ()=>{
+  const groups = await myGroups();
+  const today = getTodayWeekday();
+  const todayGroups = groups.filter(g=> (g.days||[]).includes(today))
+    .sort((a,b)=> (a.time||'').localeCompare(b.time||''));
+  const weekRows = WEEKDAYS.map(w=>{
+    const dayGroups = groups.filter(g=>(g.days||[]).includes(w));
+    if(!dayGroups.length) return '';
+    return `<tr><td style="font-weight:800;color:var(--navy);">${w}${w===today?' (النهاردة)':''}</td><td>${dayGroups.map(g=>`${g.subject} — ${g.time}`).join('<br>')}</td></tr>`;
+  }).join('');
+  setMain(`${pageHeader('جدولي', 'النهاردة: '+today)}
+    <div class="panel"><div class="panel-head"><h3>📅 حصص النهاردة</h3></div>
+      ${todayGroups.length? todayGroups.map(g=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+        <span><b>${g.subject}</b> — ${(g.studentIds||[]).length} طالب</span><span style="font-weight:700;color:var(--navy);">${g.time}</span>
+      </div>`).join('') : '<div class="empty-state"><div class="ic">🗓️</div>مفيش حصص عليك النهاردة</div>'}
+    </div>
+    <div class="panel"><div class="panel-head"><h3>🗓️ الجدول الأسبوعي الكامل</h3></div>
+      ${weekRows ? `<table><thead><tr><th>اليوم</th><th>الحصص</th></tr></thead><tbody>${weekRows}</tbody></table>` : '<div class="empty-state"><div class="ic">📚</div>مفيش مجموعات محددة الأيام لسه</div>'}
+    </div>`);
+};
+
+async function renderTodayScheduleForStaff(){
+  const groupsSnap = await db.collection('groups').get();
+  const today = getTodayWeekday();
+  const groups = groupsSnap.docs.map(d=>({id:d.id, ...d.data()}));
+  const todayGroups = groups.filter(g=>(g.days||[]).includes(today)).sort((a,b)=> (a.time||'').localeCompare(b.time||''));
+  const byTeacher = {};
+  todayGroups.forEach(g=>{
+    byTeacher[g.teacherName] = byTeacher[g.teacherName] || [];
+    byTeacher[g.teacherName].push(g);
+  });
+  const teacherBlocks = Object.keys(byTeacher).map(tn=>`
+    <div class="panel"><div class="panel-head"><h3>👨‍🏫 ${tn}</h3></div>
+      ${byTeacher[tn].map(g=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span>${g.subject} — مرحلة ${g.stage||'-'}</span><span style="font-weight:700;color:var(--navy);">${g.time}</span>
+      </div>`).join('')}
+    </div>`).join('');
+  setMain(`${pageHeader('جدول المدرسين اليوم', 'النهاردة: '+today)}
+    ${teacherBlocks || '<div class="panel empty-state"><div class="ic">🗓️</div>مفيش حصص عند أي مدرس النهاردة</div>'}
+  `);
+}
+PAGES.admin.schedule = renderTodayScheduleForStaff;
+PAGES.secretary.schedule = async ()=>{ if(secretaryBlocked('جدول المدرسين')) return; await renderTodayScheduleForStaff(); };
+
+/* ---------------- Notifications ---------------- */
+async function createNotification(userId, type, text, groupId){
+  await db.collection('notifications').add({
+    userId, type, text, groupId: groupId||null, read: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+async function getParentsOfStudents(studentIds){
+  if(!studentIds.length) return [];
+  const snap = await db.collection('users').where('role','==','parent').get();
+  return snap.docs.filter(d=> studentIds.includes(d.data().childId)).map(d=>d.id);
+}
+async function notifyGroup(group, type, text){
+  const studentIds = group.studentIds||[];
+  const parentIds = await getParentsOfStudents(studentIds);
+  const allIds = [...studentIds, ...parentIds];
+  await Promise.all(allIds.map(uid=> createNotification(uid, type, text, null)));
+}
+
+/* ---------------- Render router ---------------- */
+async function renderPage(){
+  setMain('<div class="empty-state"><div class="ic">⏳</div>جارِ التحميل...</div>');
+  try{
+    const fn = PAGES[currentUser.role] && PAGES[currentUser.role][activePage];
+    if(fn){ await fn(); } else { setMain('<div class="empty-state">الصفحة دي لسه مش متاحة</div>'); }
+  }catch(e){
+    console.error(e);
+    setMain(`<div class="empty-state"><div class="ic">⚠️</div>حصل خطأ في تحميل البيانات<br><span style="font-size:.75rem;color:var(--text-mute)">${e.message||''}</span></div>`);
+  }
+}
+
+/* =========================================================
+   ADMIN PAGES
+   ========================================================= */
+const PAGES = { admin:{}, secretary:{}, teacher:{}, student:{}, parent:{} };
+
+PAGES.admin.dashboard = async ()=>{
+  const [teachersSnap, studentsSnap, groupsSnap] = await Promise.all([
+    db.collection('users').where('role','==','teacher').get(),
+    db.collection('users').where('role','==','student').get(),
+    db.collection('groups').get()
+  ]);
+  const pendingTeachers = teachersSnap.docs.filter(d=>d.data().approved===false).length;
+  const today = todayStr();
+  let paidTodayCount = 0;
+  groupsSnap.docs.forEach(d=>{
+    const paid = d.data().paidStudents||{};
+    Object.values(paid).forEach(info=>{ if(info && info.paid && info.date===today) paidTodayCount++; });
+  });
+  setMain(`${pageHeader('لوحة الإدارة', 'دار الهجرة التعليمي')}
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${studentsSnap.size}</div><div class="stat-label">عدد الطلاب</div></div>
+      <div class="stat-card"><div class="stat-num">${teachersSnap.size}</div><div class="stat-label">عدد المدرسين</div></div>
+      <div class="stat-card"><div class="stat-num">${groupsSnap.size}</div><div class="stat-label">عدد المجموعات</div></div>
+      <div class="stat-card"><div class="stat-num">${pendingTeachers}</div><div class="stat-label">مدرسين قيد المراجعة</div></div>
+      <div class="stat-card"><div class="stat-num">${paidTodayCount}</div><div class="stat-label">دفعوا النهاردة</div></div>
+    </div>
+    ${pendingTeachers>0?`<div class="panel"><div class="panel-head"><h3>⏳ في مدرسين مستنيين موافقة</h3><button class="small-btn gold" onclick="goPage('teachers')">مراجعة الآن</button></div></div>`:''}
+    <div class="panel"><div class="panel-head"><h3>💰 متابعة المدفوعات</h3><button class="small-btn gold" onclick="goPage('payments')">فتح صفحة المدفوعات</button></div></div>
+  `);
+};
+
+PAGES.admin.teachers = async ()=>{
+  const snap = await db.collection('users').where('role','==','teacher').get();
+  const rows = await Promise.all(snap.docs.map(async d=>{
+    const t = d.data();
+    const avg = await getTeacherAvgRating(d.id);
+    return `<tr>
+      <td>${t.name}</td><td>${t.subject||'-'}</td><td>${t.sessionPrice||0} ج</td><td>${starsDisplay(avg)}</td><td>${t.phone||'-'}</td>
+      <td>${t.approved?'<span class="badge badge-green">معتمد</span>':'<span class="badge badge-red">قيد المراجعة</span>'}</td>
+      <td>${t.approved
+        ? `<button class="small-btn outline" onclick="setTeacherApproval('${d.id}',false)">إلغاء الاعتماد</button>`
+        : `<button class="small-btn gold" onclick="setTeacherApproval('${d.id}',true)">✔ اعتماد</button>`}</td>
+    </tr>`;
+  }));
+  setMain(`${pageHeader('المدرسون')}
+    <div class="panel">
+      ${snap.empty? '<div class="empty-state"><div class="ic">👨‍🏫</div>مفيش مدرسين مسجلين لسه</div>' :
+      `<table><thead><tr><th>الاسم</th><th>المادة</th><th>سعر الحصة</th><th>التقييم</th><th>الهاتف</th><th>الحالة</th><th></th></tr></thead><tbody>${rows.join('')}</tbody></table>`}
+    </div>`);
+};
+async function setTeacherApproval(uid, val){
+  await db.collection('users').doc(uid).update({approved: val});
+  toast(val?'تم اعتماد المدرس':'تم إلغاء الاعتماد');
+  PAGES.admin.teachers();
+}
+
+PAGES.admin.students = async ()=>{
+  const snap = await db.collection('users').where('role','==','student').get();
+  const rows = snap.docs.map(d=>{
+    const s = d.data();
+    return `<tr><td>${s.name}</td><td>${s.stage||'-'}</td><td>${s.grade||'-'}</td><td>${s.phone||'-'}</td><td>${s.email}</td></tr>`;
+  }).join('');
+  setMain(`${pageHeader('الطلاب')}
+    <div class="panel">
+      ${snap.empty? '<div class="empty-state"><div class="ic">👨‍🎓</div>مفيش طلاب مسجلين لسه</div>' :
+      `<table><thead><tr><th>الاسم</th><th>المرحلة</th><th>الصف</th><th>الهاتف</th><th>الإيميل</th></tr></thead><tbody>${rows}</tbody></table>`}
+    </div>`);
+};
+
+/* السكرتيرة (بعد الاعتماد) بتشوف نفس صفحتي المدرسين والطلاب بتاعة الإدارة بالظبط */
+function secretaryBlocked(pageTitle){
+  if(currentUser.role==='secretary' && currentUser.approved===false){
+    setMain(`${pageHeader(pageTitle)}<div class="panel empty-state"><div class="ic">⏳</div>حسابك لسه قيد المراجعة من صاحب السنتر، هتقدري تشتغلي بمجرد الاعتماد.</div>`);
+    return true;
+  }
+  return false;
+}
+PAGES.secretary.teachers = async ()=>{ if(secretaryBlocked('المدرسون')) return; await PAGES.admin.teachers(); };
+PAGES.secretary.students = async ()=>{ if(secretaryBlocked('الطلاب')) return; await PAGES.admin.students(); };
+
+PAGES.admin.groups = async ()=>{
+  const [groupsSnap, teachersSnap, fees] = await Promise.all([
+    db.collection('groups').orderBy('createdAt','desc').get(),
+    db.collection('users').where('role','==','teacher').where('approved','==',true).get(),
+    getCenterFees()
+  ]);
+  const teacherOptions = teachersSnap.docs.map(d=>`<option value="${d.id}|${d.data().name}|${d.data().subject||''}|${d.data().sessionPrice||0}">${d.data().name} — ${d.data().subject||''}</option>`).join('');
+  const rowsArr = groupsSnap.docs.map(d=>{
+    const g = d.data();
+    return `<div class="panel"><div class="panel-head">
+      <h3>${g.subject} — ${g.teacherName}</h3>
+      <div style="display:flex;gap:8px;">
+        <span class="badge badge-gold">${(g.studentIds||[]).length}/${g.seats} طالب</span>
+        <button class="small-btn danger" onclick="deleteGroup('${d.id}')">حذف</button>
+      </div>
+    </div>
+    <p style="color:var(--text-mute);font-size:.85rem;margin:0 0 6px;">${g.day} - ${g.time} ${g.stage?' — '+g.stage:''}</p>
+    <p style="margin:0 0 10px;">${priceLine(g.pricePerSession, g.stage, fees)}</p>
+    ${attendDots(g.sessionsDone||0, g.sessionsTotal||8)}
+    </div>`;
+  });
+  setMain(`${pageHeader('المجموعات')}
+    <div class="panel">
+      <div class="panel-head"><h3>💰 رسوم السنتر حسب المرحلة الدراسية</h3></div>
+      <p style="color:var(--text-mute);font-size:.85rem;margin:0 0 12px;">المبلغ ده بيتضاف تلقائيًا فوق سعر المدرس، وبيختلف حسب مرحلة الطلاب في المجموعة.</p>
+      <div class="form-grid">
+        ${STAGES.map(s=>`<div class="field"><label>${s}</label><input id="fee-${s}" type="number" min="0" value="${fees[s]||0}"></div>`).join('')}
+        <button class="small-btn gold" onclick="saveCenterFees()">حفظ الرسوم</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>➕ إضافة مجموعة جديدة</h3></div>
+      <div class="form-grid">
+        <div class="field"><label>المادة</label><input id="ng-subject" placeholder="مثال: رياضيات"></div>
+        <div class="field"><label>المدرس</label><select id="ng-teacher" onchange="autofillTeacherPrice()">${teacherOptions || '<option value="">لا يوجد مدرسون معتمدون</option>'}</select></div>
+        <div class="field"><label>المرحلة الدراسية</label><select id="ng-stage">${STAGES.map(s=>`<option value="${s}">${s}</option>`).join('')}</select></div>
+        <div class="field" style="grid-column:1/-1;"><label>أيام الأسبوع</label>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;">
+            ${WEEKDAYS.map(w=>`<label style="display:flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;"><input type="checkbox" class="ng-day-cb" value="${w}"> ${w}</label>`).join('')}
+          </div>
+        </div>
+        <div class="field"><label>الوقت</label><input id="ng-time" placeholder="مثال: 5:00 م"></div>
+        <div class="field"><label>عدد الأماكن</label><input id="ng-seats" type="number" value="20"></div>
+        <div class="field"><label>عدد الحصص الشهري</label><input id="ng-sessions" type="number" value="8"></div>
+        <div class="field"><label>سعر الحصة للمدرس (جنيه)</label><input id="ng-price" type="number" min="0" value="0"></div>
+        <button class="small-btn gold" onclick="addGroup()">إضافة</button>
+      </div>
+    </div>
+    ${groupsSnap.empty? '<div class="panel"><div class="empty-state"><div class="ic">📚</div>مفيش مجموعات لسه</div></div>' : rowsArr.join('')}
+  `);
+};
+function autofillTeacherPrice(){
+  const val = document.getElementById('ng-teacher').value;
+  if(!val) return;
+  const parts = val.split('|');
+  document.getElementById('ng-price').value = parts[3]||0;
+}
+async function saveCenterFees(){
+  const feeByStage = {};
+  STAGES.forEach(s=>{ feeByStage[s] = parseFloat(document.getElementById('fee-'+s).value)||0; });
+  await db.collection('settings').doc('general').set({centerFeeByStage: feeByStage}, {merge:true});
+  centerFeesCache = feeByStage;
+  toast('تم حفظ رسوم السنتر');
+  PAGES.admin.groups();
+}
+
+/* ---------------- Payments (shared: admin + secretary) ---------------- */
+function todayStr(){ return new Date().toLocaleDateString('ar-EG'); }
+async function renderPaymentsPage(){
+  if(currentUser.role==='secretary' && currentUser.approved===false){
+    setMain(`${pageHeader('المدفوعات')}<div class="panel empty-state"><div class="ic">⏳</div>حسابك لسه قيد المراجعة من صاحب السنتر، هتقدري تشتغلي بمجرد الاعتماد.</div>`);
+    return;
+  }
+  const groupsSnap = await db.collection('groups').orderBy('createdAt','desc').get();
+  const today = todayStr();
+  const todaysPaid = [];
+  const rowsArr = await Promise.all(groupsSnap.docs.map(async d=>{
+    const g = d.data();
+    const students = await getUsersByIds(g.studentIds||[]);
+    const paid = g.paidStudents||{};
+    const studentRows = students.map(s=>{
+      const info = paid[s.id];
+      const isPaid = !!(info && info.paid);
+      if(isPaid && info.date===today) todaysPaid.push(`${s.name} (${g.subject} — ${g.teacherName})`);
+      return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem;">
+        <span>${s.name} ${isPaid?`<span style="color:var(--text-mute);font-size:.75rem;">(${info.date})</span>`:''}</span>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" ${isPaid?'checked':''} onchange="markPaid('${d.id}','${s.id}','${(s.name||'').replace(/'/g,'')}','${g.subject}','${(g.teacherName||'').replace(/'/g,'')}',this.checked)"> دفع
+        </label>
+      </div>`;
+    }).join('') || '<p style="color:var(--text-mute);font-size:.82rem;">مفيش طلاب في المجموعة دي لسه</p>';
+    return `<div class="panel"><div class="panel-head"><h3>${g.subject} — ${g.teacherName}</h3><span class="badge badge-gold">${g.day} ${g.time}</span></div>${studentRows}</div>`;
+  }));
+  setMain(`${pageHeader('المدفوعات', 'حطي علامة صح جنب اسم الطالب لما يدفع')}
+    <div class="panel">
+      <div class="panel-head"><h3>📅 اللي دفعوا النهاردة (${today})</h3></div>
+      ${todaysPaid.length? todaysPaid.map(t=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);">✔ ${t}</div>`).join('') : '<p style="color:var(--text-mute);font-size:.85rem;">لسه محدش دفع النهاردة</p>'}
+    </div>
+    ${groupsSnap.empty? '<div class="panel"><div class="empty-state"><div class="ic">💰</div>مفيش مجموعات لسه</div></div>' : rowsArr.join('')}
+  `);
+}
+PAGES.admin.payments = renderPaymentsPage;
+PAGES.secretary.payments = renderPaymentsPage;
+PAGES.secretary.dashboard = async ()=>{
+  if(currentUser.approved===false){
+    setMain(`${pageHeader('أهلًا، '+currentUser.name)}<div class="panel empty-state"><div class="ic">⏳</div>حسابك لسه قيد المراجعة من صاحب السنتر، هتقدري تشتغلي بمجرد الاعتماد.</div>`);
+    return;
+  }
+  const groupsSnap = await db.collection('groups').get();
+  const today = todayStr();
+  let paidTodayCount = 0;
+  groupsSnap.docs.forEach(d=>{
+    const paid = d.data().paidStudents||{};
+    Object.values(paid).forEach(info=>{ if(info && info.paid && info.date===today) paidTodayCount++; });
+  });
+  setMain(`${pageHeader('أهلًا، '+currentUser.name, 'السكرتارية')}
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${paidTodayCount}</div><div class="stat-label">دفعوا النهاردة</div></div>
+    </div>
+    <div class="panel"><button class="small-btn gold" onclick="goPage('payments')">💰 فتح صفحة المدفوعات</button></div>`);
+};
+async function markPaid(groupId, studentId, studentName, subject, teacherName, checked){
+  const value = checked ? {paid:true, date: todayStr(), markedBy: currentUser.uid} : {paid:false};
+  await db.collection('groups').doc(groupId).update({[`paidStudents.${studentId}`]: value});
+  if(checked){
+    await createNotification(studentId, 'paid', `تم تأكيد دفع حصص مستر ${teacherName} في مادة ${subject} ✅`);
+    const parentIds = await getParentsOfStudents([studentId]);
+    await Promise.all(parentIds.map(pid=> createNotification(pid, 'paid', `تم تأكيد دفع ابنك/ابنتك لحصص مستر ${teacherName} في مادة ${subject} ✅`)));
+  }
+  toast(checked?'تم تسجيل الدفع وإرسال إشعار للطالب وولي الأمر':'تم إلغاء تسجيل الدفع');
+  renderPaymentsPage();
+}
+
+/* ---------------- Staff (secretary approval) — admin only ---------------- */
+PAGES.admin.staff = async ()=>{
+  const snap = await db.collection('users').where('role','==','secretary').get();
+  const rows = snap.docs.map(d=>{
+    const s = d.data();
+    return `<tr>
+      <td>${s.name}</td><td dir="ltr">${s.phone||'-'}</td><td>${s.email}</td>
+      <td>${s.approved?'<span class="badge badge-green">معتمدة</span>':'<span class="badge badge-red">قيد المراجعة</span>'}</td>
+      <td>${s.approved
+        ? `<button class="small-btn danger" onclick="setSecretaryApproval('${d.id}',false)">إلغاء الاعتماد</button>`
+        : `<button class="small-btn gold" onclick="setSecretaryApproval('${d.id}',true)">✔ اعتماد</button>`}</td>
+    </tr>`;
+  }).join('');
+  setMain(`${pageHeader('الموظفين', 'السكرتيرة بتشتغل بنفس صلاحياتك تقريبًا (مدرسين، طلاب، مدفوعات) — والفرق الوحيد إنك إنتي بس اللي تقدري توافقي عليها أو تلغي اعتمادها')}
+    <div class="panel">
+      ${snap.empty? '<div class="empty-state"><div class="ic">🧑‍💼</div>مفيش حد سجل كسكرتيرة لسه</div>' :
+      `<table><thead><tr><th>الاسم</th><th>الهاتف</th><th>الإيميل</th><th>الحالة</th><th></th></tr></thead><tbody>${rows}</tbody></table>`}
+    </div>
+    <p style="color:var(--text-mute);font-size:.8rem;">لغاية ما توافقي، السكرتيرة مش هتقدر تدخل تسجل أي مدفوعات. ولو حد مشي من الشغل، إلغاء الاعتماد بيقفل دخوله فورًا من غير ما تحتاجي تمسحي حسابه.</p>`);
+};
+async function setSecretaryApproval(uid, val){
+  await db.collection('users').doc(uid).update({approved: val});
+  toast(val?'تم اعتماد السكرتيرة':'تم إلغاء الاعتماد');
+  PAGES.admin.staff();
+}
+
+async function addGroup(){
+  const subject = document.getElementById('ng-subject').value.trim();
+  const teacherVal = document.getElementById('ng-teacher').value;
+  const stage = document.getElementById('ng-stage').value;
+  const days = Array.from(document.querySelectorAll('.ng-day-cb:checked')).map(cb=>cb.value);
+  const day = days.join('، ');
+  const time = document.getElementById('ng-time').value.trim();
+  const seats = parseInt(document.getElementById('ng-seats').value)||20;
+  const sessionsTotal = parseInt(document.getElementById('ng-sessions').value)||8;
+  const pricePerSession = parseFloat(document.getElementById('ng-price').value)||0;
+  if(!subject || !teacherVal || !days.length || !time){ toast('من فضلك املأ كل الحقول واختاري يوم واحد على الأقل'); return; }
+  const [teacherId, teacherName] = teacherVal.split('|');
+  await db.collection('groups').add({
+    subject, teacherId, teacherName, day, days, time, seats, sessionsTotal, pricePerSession, stage,
+    sessionsDone: 0, studentIds: [], paidStudents: {}, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast('تمت إضافة المجموعة');
+  PAGES.admin.groups();
+}
+async function deleteGroup(id){
+  await db.collection('groups').doc(id).delete();
+  toast('تم حذف المجموعة');
+  PAGES.admin.groups();
+}
+
+PAGES.admin.homework = async ()=>{
+  const snap = await db.collection('homework').orderBy('createdAt','desc').limit(50).get();
+  const rows = snap.docs.map(d=>{
+    const h = d.data();
+    return `<tr><td>${h.subject}</td><td>${h.title}</td><td>${h.due}</td><td><button class="small-btn danger" onclick="deleteHomework('${d.id}')">حذف</button></td></tr>`;
+  }).join('');
+  setMain(`${pageHeader('الواجبات')}
+    <div class="panel">
+      ${snap.empty?'<div class="empty-state"><div class="ic">📝</div>مفيش واجبات لسه</div>':
+      `<table><thead><tr><th>المادة</th><th>العنوان</th><th>الموعد النهائي</th><th></th></tr></thead><tbody>${rows}</tbody></table>`}
+    </div>`);
+};
+async function deleteHomework(id){
+  await db.collection('homework').doc(id).delete();
+  toast('تم حذف الواجب');
+  renderPage();
+}
+
+PAGES.admin.announcements = async ()=>{
+  const snap = await db.collection('announcements').orderBy('createdAt','desc').limit(30).get();
+  const rows = snap.docs.map(d=>{
+    const a = d.data();
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span>${a.text}</span><button class="small-btn danger" onclick="deleteAnnouncement('${d.id}')">حذف</button></div>`;
+  }).join('');
+  setMain(`${pageHeader('الإعلانات')}
+    <div class="panel">
+      <div class="panel-head"><h3>➕ إعلان جديد</h3></div>
+      <div style="display:flex;gap:10px;">
+        <input id="new-ann" placeholder="اكتب نص الإعلان..." style="flex:1;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);">
+        <button class="small-btn gold" onclick="addAnnouncement()">نشر</button>
+      </div>
+    </div>
+    <div class="panel">${snap.empty?'<div class="empty-state"><div class="ic">📢</div>مفيش إعلانات لسه</div>':rows}</div>`);
+};
+async function addAnnouncement(){
+  const text = document.getElementById('new-ann').value.trim();
+  if(!text) return;
+  await db.collection('announcements').add({text, date: new Date().toLocaleDateString('ar-EG'), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+  toast('تم النشر');
+  PAGES.admin.announcements();
+}
+async function deleteAnnouncement(id){
+  await db.collection('announcements').doc(id).delete();
+  toast('تم الحذف');
+  PAGES.admin.announcements();
+}
+
+/* =========================================================
+   TEACHER PAGES
+   ========================================================= */
+async function myGroups(){
+  const snap = await db.collection('groups').where('teacherId','==',currentUser.uid).get();
+  return snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+
+PAGES.teacher.dashboard = async ()=>{
+  if(currentUser.approved===false){
+    setMain(`${pageHeader('أهلًا، '+currentUser.name)}<div class="panel empty-state"><div class="ic">⏳</div>حسابك لسه قيد المراجعة من الإدارة، هتقدر تشتغل بمجرد الاعتماد.</div>`);
+    return;
+  }
+  const groups = await myGroups();
+  const hwSnap = await db.collection('homework').where('teacherId','==',currentUser.uid).get();
+  const totalStudents = groups.reduce((a,g)=>a+(g.studentIds||[]).length,0);
+  setMain(`${pageHeader('أهلًا، '+currentUser.name, 'مدرس '+(currentUser.subject||''))}
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${groups.length}</div><div class="stat-label">مجموعاتي</div></div>
+      <div class="stat-card"><div class="stat-num">${totalStudents}</div><div class="stat-label">عدد الطلاب</div></div>
+      <div class="stat-card"><div class="stat-num">${hwSnap.size}</div><div class="stat-label">واجبات نشطة</div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>مجموعاتي</h3></div>
+    ${groups.length? `<table><thead><tr><th>المادة</th><th>الموعد</th><th>الحضور</th></tr></thead><tbody>
+      ${groups.map(g=>`<tr><td>${g.subject}</td><td>${g.day} - ${g.time}</td><td>${attendDots(g.sessionsDone||0,g.sessionsTotal||8)}</td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty-state"><div class="ic">📚</div>الإدارة لسه ما ضافتش مجموعات ليك</div>'}
+    </div>`);
+};
+
+PAGES.teacher.groups = async ()=>{
+  const [groups, fees] = await Promise.all([myGroups(), getCenterFees()]);
+  setMain(`${pageHeader('مجموعاتي')}
+    ${groups.length? groups.map(g=>`<div class="panel"><div class="panel-head"><h3>${g.subject} — ${g.day} ${g.time}</h3><span class="badge badge-gold">${(g.studentIds||[]).length}/${g.seats} طالب</span></div>
+    ${attendDots(g.sessionsDone||0,g.sessionsTotal||8)}
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+      <div class="field" style="margin:0;max-width:160px;"><label>سعر الحصة (جنيه)</label><input id="price-${g.id}" type="number" min="0" value="${g.pricePerSession||0}"></div>
+      <button class="small-btn gold" onclick="saveTeacherPrice('${g.id}')">حفظ السعر</button>
+      <span style="align-self:center;">${priceLine(g.pricePerSession, g.stage, fees)}</span>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="small-btn outline" onclick="cancelNextSession('${g.id}','${g.subject}')">🔴 إلغاء الحصة الجاية</button>
+      <button class="small-btn outline" onclick="rescheduleGroup('${g.id}','${g.subject}')">🔁 تغيير الموعد</button>
+    </div>
+    </div>`).join('')
+    : '<div class="panel empty-state"><div class="ic">📚</div>مفيش مجموعات ليك لسه</div>'}
+  `);
+};
+async function saveTeacherPrice(groupId){
+  const val = parseFloat(document.getElementById('price-'+groupId).value)||0;
+  await db.collection('groups').doc(groupId).update({pricePerSession: val});
+  toast('تم حفظ سعر الحصة');
+  PAGES.teacher.groups();
+}
+async function cancelNextSession(groupId, subject){
+  if(!confirm('متأكدة إنك عايزة تلغي الحصة الجاية؟ هيتبعت إشعار لكل طلاب المجموعة.')) return;
+  const doc = await db.collection('groups').doc(groupId).get();
+  await notifyGroup(doc.data(), 'cancel', `تم إلغاء الحصة الجاية في مادة ${subject}. هيتم تحديد موعد بديل قريبًا.`);
+  toast('تم إرسال إشعار الإلغاء للطلاب');
+}
+async function rescheduleGroup(groupId, subject){
+  const newDay = prompt('اليوم الجديد:');
+  if(newDay===null) return;
+  const newTime = prompt('الوقت الجديد:');
+  if(newTime===null) return;
+  await db.collection('groups').doc(groupId).update({day:newDay, time:newTime});
+  const doc = await db.collection('groups').doc(groupId).get();
+  await notifyGroup(doc.data(), 'reschedule', `تم تغيير موعد حصص مادة ${subject} ليصبح: ${newDay} - ${newTime}.`);
+  toast('تم تحديث الموعد وإرسال إشعار للطلاب');
+  PAGES.teacher.groups();
+}
+
+PAGES.teacher.attendance = async ()=>{
+  const groups = await myGroups();
+  const withStudents = await Promise.all(groups.map(async g=>{
+    const students = await getUsersByIds(g.studentIds||[]);
+    return {...g, studentsData: students};
+  }));
+  setMain(`${pageHeader('تسجيل الحضور')}
+    ${withStudents.length? withStudents.map(g=>{
+      const done = g.sessionsDone||0, total = g.sessionsTotal||8;
+      const finished = done>=total;
+      const checklist = g.studentsData.map(s=>`
+        <label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+          <input type="checkbox" checked id="att-${g.id}-${s.id}"> ${s.name}
+        </label>`).join('') || '<p style="color:var(--text-mute);font-size:.85rem;">مفيش طلاب في المجموعة دي لسه</p>';
+      return `<div class="panel"><div class="panel-head"><h3>${g.subject}</h3></div>
+      ${attendDots(done,total)}
+      <p style="color:var(--text-mute);font-size:.85rem;margin:10px 0 14px;">${done} من ${total} حصص مؤكدة</p>
+      ${finished ? '<div class="badge badge-green">اكتمل عدد حصص الشهر</div>' : `
+      <div style="background:var(--bg);border-radius:10px;padding:14px;">
+        <p style="font-weight:700;margin:0 0 8px;color:var(--navy);">حضور حصة اليوم (حصة رقم ${done+1}):</p>
+        ${checklist}
+        <button class="small-btn gold" style="margin-top:10px;" onclick="saveAttendance('${g.id}','${g.subject}',${done+1},${total},${g.studentsData.length})">💾 حفظ حضور اليوم</button>
+      </div>`}
+      </div>`;
+    }).join('')
+    : '<div class="panel empty-state"><div class="ic">✅</div>مفيش مجموعات ليك لسه</div>'}
+  `);
+};
+async function getUsersByIds(ids){
+  if(!ids.length) return [];
+  const docs = await Promise.all(ids.map(id=>db.collection('users').doc(id).get()));
+  return docs.filter(d=>d.exists).map(d=>({id:d.id, ...d.data()}));
+}
+async function saveAttendance(groupId, subject, sessionNumber, total, studentCount){
+  const doc = await db.collection('groups').doc(groupId).get();
+  const g = doc.data();
+  const students = await getUsersByIds(g.studentIds||[]);
+  const records = {};
+  students.forEach(s=>{ records[s.id] = !!document.getElementById(`att-${groupId}-${s.id}`)?.checked; });
+
+  await db.collection('groups').doc(groupId).collection('sessions').add({
+    sessionNumber, records, date: new Date().toLocaleDateString('ar-EG'),
+    teacherId: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await db.collection('teacherAttendance').add({
+    teacherId: currentUser.uid, teacherName: currentUser.name, groupId, subject,
+    date: new Date().toLocaleDateString('ar-EG'), sessionNumber,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  const newDone = Math.min(sessionNumber, total);
+  await db.collection('groups').doc(groupId).update({sessionsDone: newDone});
+
+  if(newDone === total-1){
+    await notifyGroup(g, 'payment', `تنبيه: باقي حصة واحدة بس على انتهاء اشتراك مادة ${subject} — استعدوا لدفع الشهر الجديد.`);
+  } else if(newDone === total){
+    await notifyGroup(g, 'payment', `انتهى عدد حصص الشهر في مادة ${subject}. من فضلكم جددوا الاشتراك مع الأستاذ ${currentUser.name}.`);
+  }
+  toast('تم حفظ حضور اليوم');
+  PAGES.teacher.attendance();
+}
+
+PAGES.teacher.homework = async ()=>{
+  const groups = await myGroups();
+  const hwSnap = await db.collection('homework').where('teacherId','==',currentUser.uid).orderBy('createdAt','desc').get();
+  const rowsArr = await Promise.all(hwSnap.docs.map(async d=>{
+    const h = d.data();
+    const g = groups.find(x=>x.id===h.groupId);
+    const totalStudents = g ? (g.studentIds||[]).length : 0;
+    const subSnap = await db.collection('homework').doc(d.id).collection('submissions').get();
+    const submittedIds = subSnap.docs.filter(s=>s.data().submitted).map(s=>s.id);
+    const students = g ? await getUsersByIds(g.studentIds||[]) : [];
+    const listRows = students.map(s=>`
+      <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:.82rem;">
+        <span>${s.name}</span>
+        <span>${submittedIds.includes(s.id)?'<span style="color:var(--green);font-weight:700;">✔ سلّم</span>':'<span style="color:var(--red);font-weight:700;">✘ لسه ماسلمش</span>'}</span>
+      </div>`).join('');
+    return `<div class="panel"><div class="panel-head">
+      <h3>${h.subject} — ${h.title}</h3>
+      <button class="small-btn danger" onclick="deleteHomework('${d.id}')">حذف</button>
+    </div>
+    <p style="color:var(--text-mute);font-size:.85rem;margin:0 0 10px;">الموعد النهائي: ${h.due}</p>
+    <div style="background:var(--bg);border-radius:10px;padding:10px 14px;">
+      <p style="font-weight:700;margin:0 0 6px;color:var(--navy);">سلّم ${submittedIds.length} من ${totalStudents} طالب</p>
+      ${listRows || '<p style="color:var(--text-mute);font-size:.82rem;">مفيش طلاب في المجموعة دي</p>'}
+    </div>
+    </div>`;
+  }));
+  const groupOptions = groups.map(g=>`<option value="${g.id}">${g.subject} — ${g.day} ${g.time}</option>`).join('');
+  setMain(`${pageHeader('الواجبات')}
+    <div class="panel">
+      <div class="panel-head"><h3>➕ إضافة واجب</h3></div>
+      <div class="form-grid">
+        <div class="field"><label>المجموعة</label><select id="hw-group">${groupOptions || '<option value="">لا يوجد مجموعات</option>'}</select></div>
+        <div class="field"><label>عنوان الواجب</label><input id="hw-title"></div>
+        <div class="field"><label>الموعد النهائي</label><input id="hw-due" placeholder="مثال: الجمعة القادمة"></div>
+        <div class="field"><label>رابط ملف (اختياري)</label><input id="hw-link" placeholder="رابط Google Drive مثلاً"></div>
+        <button class="small-btn gold" onclick="addHomework()">إضافة</button>
+      </div>
+    </div>
+    ${hwSnap.empty?'<div class="panel"><div class="empty-state"><div class="ic">📝</div>مفيش واجبات لسه</div></div>': rowsArr.join('')}
+  `);
+};
+async function addHomework(){
+  const groupId = document.getElementById('hw-group').value;
+  const title = document.getElementById('hw-title').value.trim();
+  const due = document.getElementById('hw-due').value.trim();
+  const link = document.getElementById('hw-link').value.trim();
+  if(!groupId || !title || !due){ toast('من فضلك املأ كل الحقول'); return; }
+  const groups = await myGroups();
+  const g = groups.find(x=>x.id===groupId);
+  await db.collection('homework').add({
+    groupId, subject: g.subject, title, due, link: link||null,
+    teacherId: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast('تمت إضافة الواجب');
+  PAGES.teacher.homework();
+}
+
+PAGES.teacher.chat = async ()=>{
+  const groups = await myGroups();
+  if(!groups.length){ setMain(`${pageHeader('شات المجموعة')}<div class="panel empty-state"><div class="ic">💬</div>مفيش مجموعات ليك لسه</div>`); return; }
+  const groupOptions = groups.map(g=>`<option value="${g.id}">${g.subject} — ${g.day} ${g.time}</option>`).join('');
+  setMain(`${pageHeader('شات المجموعة')}
+    <div class="panel">
+      <div class="field"><label>اختار المجموعة</label><select id="chat-group" onchange="openChat(this.value)">${groupOptions}</select></div>
+      <div id="chat-box" style="background:var(--bg);border-radius:10px;padding:16px;height:280px;overflow-y:auto;margin-bottom:14px;"></div>
+      <div style="display:flex;gap:10px;">
+        <input type="text" id="chat-input" placeholder="اكتب رسالة..." style="flex:1;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);">
+        <button class="small-btn gold" onclick="sendChat()">إرسال</button>
+      </div>
+    </div>`);
+  openChat(groups[0].id);
+};
+
+PAGES.student.chat = async ()=>{
+  const groups = await studentGroups();
+  if(!groups.length){ setMain(`${pageHeader('شات المجموعة')}<div class="panel empty-state"><div class="ic">💬</div>لسه مش منضم لأي مجموعة</div>`); return; }
+  setMain(`${pageHeader('شات المجموعة — '+groups[0].subject)}
+    <div class="panel">
+      <div id="chat-box" style="background:var(--bg);border-radius:10px;padding:16px;height:280px;overflow-y:auto;margin-bottom:14px;"></div>
+      <div style="display:flex;gap:10px;">
+        <input type="text" id="chat-input" placeholder="اكتب رسالة..." style="flex:1;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);">
+        <button class="small-btn gold" onclick="sendChat()">إرسال</button>
+      </div>
+    </div>`);
+  openChat(groups[0].id);
+};
+
+let currentChatGroup = null;
+function openChat(groupId){
+  currentChatGroup = groupId;
+  if(chatUnsub) chatUnsub();
+  const box = document.getElementById('chat-box');
+  chatUnsub = db.collection('groups').doc(groupId).collection('messages').orderBy('ts','asc').limitToLast(50)
+    .onSnapshot(snap=>{
+      box.innerHTML = snap.docs.map(d=>{
+        const m = d.data();
+        return `<p style="margin:0 0 10px;"><b>${m.senderName}:</b> ${escapeHtml(m.text)}</p>`;
+      }).join('') || '<p style="color:var(--text-mute);">لسه مفيش رسائل، ابدأ المحادثة!</p>';
+      box.scrollTop = box.scrollHeight;
+    });
+}
+async function sendChat(){
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text || !currentChatGroup) return;
+  input.value = '';
+  await db.collection('groups').doc(currentChatGroup).collection('messages').add({
+    text, senderName: currentUser.name, senderRole: currentUser.role, senderId: currentUser.uid,
+    ts: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+function escapeHtml(s){
+  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+
+/* =========================================================
+   STUDENT PAGES
+   ========================================================= */
+async function studentGroups(){
+  const snap = await db.collection('groups').where('studentIds','array-contains',currentUser.uid).get();
+  return snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+
+PAGES.student.dashboard = async ()=>{
+  const groups = await studentGroups();
+  const hwSnap = await db.collection('homework').get();
+  const annSnap = await db.collection('announcements').orderBy('createdAt','desc').limit(5).get();
+  const g = groups[0];
+  setMain(`${pageHeader('أهلًا، '+currentUser.name)}
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${g? (g.sessionsDone||0)+'/'+(g.sessionsTotal||8) : '-'}</div><div class="stat-label">الحصص المنتهية</div></div>
+      <div class="stat-card"><div class="stat-num">${groups.length}</div><div class="stat-label">مجموعاتي</div></div>
+      <div class="stat-card"><div class="stat-num">${hwSnap.size}</div><div class="stat-label">واجبات</div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>📢 الإعلانات</h3></div>
+    ${annSnap.empty?'<div class="empty-state"><div class="ic">📢</div>مفيش إعلانات لسه</div>':
+    annSnap.docs.map(d=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);">${d.data().text}</div>`).join('')}</div>`);
+};
+
+async function getTeacherAvgRating(teacherId){
+  const snap = await db.collection('ratings').where('teacherId','==',teacherId).get();
+  if(snap.empty) return null;
+  const sum = snap.docs.reduce((a,d)=>a+(d.data().stars||0),0);
+  return (sum/snap.docs.length).toFixed(1);
+}
+function starsDisplay(avg){
+  if(avg===null) return '<span style="color:var(--text-mute);font-size:.78rem;">لسه مفيش تقييمات</span>';
+  return `<span style="color:var(--gold);font-weight:700;">⭐ ${avg}</span>`;
+}
+
+PAGES.student.groups = async ()=>{
+  const [groups, allGroupsSnap, fees] = await Promise.all([studentGroups(), db.collection('groups').get(), getCenterFees()]);
+  const myIds = groups.map(g=>g.id);
+  const available = allGroupsSnap.docs.filter(d=>!myIds.includes(d.id)).map(d=>({id:d.id,...d.data()}));
+  const availableWithRating = await Promise.all(available.map(async g=>({...g, avgRating: await getTeacherAvgRating(g.teacherId)})));
+  const myGroupsWithRating = await Promise.all(groups.map(async g=>({...g, avgRating: await getTeacherAvgRating(g.teacherId), myRating: await getMyRating(g.id)})));
+  setMain(`${pageHeader('مجموعتي')}
+    ${scheduleTable(groups)}
+    <div class="panel"><div class="panel-head"><h3>🔍 المجموعات المتاحة للانضمام</h3></div>
+    ${availableWithRating.length? availableWithRating.map(g=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><b>${g.subject}</b> — ${g.teacherName} — ${g.day} ${g.time} <span style="color:var(--text-mute);font-size:.8rem;">(${(g.studentIds||[]).length}/${g.seats})</span> ${starsDisplay(g.avgRating)}</div>
+        <button class="small-btn gold" ${(g.studentIds||[]).length>=g.seats?'disabled':''} onclick="joinGroup('${g.id}')">${(g.studentIds||[]).length>=g.seats?'مكتملة':'انضمام'}</button>
+      </div>
+      <p style="margin:6px 0 0;">${priceLine(g.pricePerSession, g.stage, fees)}</p>
+    </div>`).join('') : '<div class="empty-state"><div class="ic">📚</div>مفيش مجموعات متاحة حاليًا</div>'}
+    </div>
+    <div class="panel"><div class="panel-head"><h3>مجموعاتي الحالية</h3></div>
+    ${myGroupsWithRating.length? myGroupsWithRating.map(g=>`
+      <div style="padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border);">
+        <p><b>${g.subject}</b> — ${g.teacherName} — ${g.day} ${g.time} ${starsDisplay(g.avgRating)}</p>
+        ${attendDots(g.sessionsDone||0,g.sessionsTotal||8)}
+        <p style="margin:8px 0;">${priceLine(g.pricePerSession, g.stage, fees)} ${paymentBadge(g, currentUser.uid)}</p>
+        <div style="background:var(--bg);border-radius:10px;padding:12px;">
+          <p style="font-weight:700;margin:0 0 8px;color:var(--navy);">${g.myRating?'تقييمك للمدرس:':'قيّمي الأستاذ ' + g.teacherName + ':'}</p>
+          <div id="stars-${g.id}">${renderStarPicker(g.id, g.myRating?g.myRating.stars:0)}</div>
+          <textarea id="comment-${g.id}" placeholder="تعليق (اختياري)" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1.5px solid var(--border);" rows="2">${g.myRating?g.myRating.comment||'':''}</textarea>
+          <button class="small-btn gold" style="margin-top:8px;" onclick="submitRating('${g.id}','${g.teacherId}')">${g.myRating?'تحديث التقييم':'إرسال التقييم'}</button>
+        </div>
+      </div>`).join('') : '<div class="empty-state"><div class="ic">📚</div>لسه مش منضم لأي مجموعة</div>'}
+    </div>`);
+};
+let selectedStars = {};
+function renderStarPicker(groupId, current){
+  selectedStars[groupId] = current||0;
+  let html = '<div style="font-size:1.4rem;">';
+  for(let i=1;i<=5;i++){
+    html += `<span style="cursor:pointer;" onclick="pickStar('${groupId}',${i})" id="star-${groupId}-${i}">${i<=current?'⭐':'☆'}</span>`;
+  }
+  return html + '</div>';
+}
+function pickStar(groupId, n){
+  selectedStars[groupId] = n;
+  for(let i=1;i<=5;i++){
+    document.getElementById(`star-${groupId}-${i}`).textContent = i<=n ? '⭐' : '☆';
+  }
+}
+async function getMyRating(groupId){
+  const doc = await db.collection('ratings').doc(currentUser.uid+'_'+groupId).get();
+  return doc.exists ? doc.data() : null;
+}
+async function submitRating(groupId, teacherId){
+  const stars = selectedStars[groupId]||0;
+  if(!stars){ toast('اختاري عدد النجوم الأول'); return; }
+  const comment = document.getElementById('comment-'+groupId).value.trim();
+  await db.collection('ratings').doc(currentUser.uid+'_'+groupId).set({
+    teacherId, studentId: currentUser.uid, groupId, stars, comment,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast('تم إرسال التقييم، شكرًا لك');
+  PAGES.student.groups();
+}
+async function joinGroup(groupId){
+  const ref = db.collection('groups').doc(groupId);
+  try{
+    await db.runTransaction(async (tx)=>{
+      const doc = await tx.get(ref);
+      const g = doc.data();
+      const ids = g.studentIds||[];
+      if(ids.includes(currentUser.uid)) return;
+      if(ids.length>=g.seats) throw new Error('المجموعة مكتملة');
+      tx.update(ref, {studentIds: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)});
+    });
+    toast('تم الانضمام للمجموعة');
+    PAGES.student.groups();
+  }catch(e){ toast(e.message||'حصل خطأ'); }
+}
+
+PAGES.student.attendance = async ()=>{
+  const groups = await studentGroups();
+  const withHistory = await Promise.all(groups.map(async g=>{
+    const sessSnap = await db.collection('groups').doc(g.id).collection('sessions').orderBy('sessionNumber','asc').get();
+    const history = sessSnap.docs.map(d=>{
+      const s = d.data();
+      const present = s.records ? !!s.records[currentUser.uid] : null;
+      return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem;">
+        <span>حصة ${s.sessionNumber} — ${s.date}</span>
+        <span>${present===true?'<span style="color:var(--green);font-weight:700;">✔ حضر</span>':present===false?'<span style="color:var(--red);font-weight:700;">✘ غاب</span>':'-'}</span>
+      </div>`;
+    }).join('');
+    return {...g, history};
+  }));
+  setMain(`${pageHeader('سجل حضوري')}
+    ${withHistory.length? withHistory.map(g=>`<div class="panel"><h3 style="margin-top:0;color:var(--navy);">${g.subject}</h3>${attendDots(g.sessionsDone||0,g.sessionsTotal||8)}<p style="color:var(--text-mute);margin-top:10px;">${g.sessionsDone||0} من ${g.sessionsTotal||8} حصص</p>
+    <div style="margin-top:12px;">${g.history || '<p style="color:var(--text-mute);font-size:.85rem;">لسه مفيش حصص متسجلة</p>'}</div>
+    </div>`).join('')
+    : '<div class="panel empty-state"><div class="ic">✅</div>لسه مش منضم لأي مجموعة</div>'}`);
+};
+
+PAGES.student.homework = async ()=>{
+  const groups = await studentGroups();
+  const subjects = groups.map(g=>g.subject);
+  const snap = await db.collection('homework').orderBy('createdAt','desc').get();
+  const relevant = snap.docs.filter(d=>subjects.includes(d.data().subject));
+  const rowsArr = await Promise.all(relevant.map(async d=>{
+    const h = d.data();
+    const subDoc = await db.collection('homework').doc(d.id).collection('submissions').doc(currentUser.uid).get();
+    const submitted = subDoc.exists && subDoc.data().submitted;
+    return `<tr>
+      <td>${h.subject}</td><td>${h.title}</td><td>${h.due}</td>
+      <td>${h.link?`<a href="${h.link}" target="_blank" style="color:var(--navy);font-weight:700;">فتح الرابط ↗</a>`:'-'}</td>
+      <td>${submitted
+        ? '<span class="badge badge-green">✔ تم التسليم</span>'
+        : `<button class="small-btn gold" onclick="submitHomework('${d.id}','${h.subject}','${h.title}','${h.teacherId}')">📤 تسليم</button>`}</td>
+    </tr>`;
+  }));
+  setMain(`${pageHeader('الواجبات')}
+    <div class="panel">${rowsArr.length? `<table><thead><tr><th>المادة</th><th>العنوان</th><th>الموعد النهائي</th><th>ملف</th><th>التسليم</th></tr></thead><tbody>${rowsArr.join('')}</tbody></table>` : '<div class="empty-state"><div class="ic">📝</div>مفيش واجبات حاليًا</div>'}</div>`);
+};
+async function submitHomework(hwId, subject, title, teacherId){
+  await db.collection('homework').doc(hwId).collection('submissions').doc(currentUser.uid).set({
+    submitted: true, submittedAt: firebase.firestore.FieldValue.serverTimestamp(), studentName: currentUser.name
+  });
+  if(teacherId){
+    await createNotification(teacherId, 'general', `الطالب ${currentUser.name} سلّم واجب "${title}" في مادة ${subject} ✅`);
+  }
+  toast('تم تسليم الواجب');
+  PAGES.student.homework();
+}
+
+/* ---------------- Shared notifications page ---------------- */
+const NOTIF_ICONS = {cancel:'🔴', reschedule:'🔁', payment:'💰', paid:'✅', general:'🔔'};
+async function renderNotificationsPage(){
+  const snap = await db.collection('notifications').where('userId','==',currentUser.uid).orderBy('createdAt','desc').limit(50).get();
+  const rows = snap.docs.map(d=>{
+    const n = d.data();
+    const ic = NOTIF_ICONS[n.type]||'🔔';
+    return `<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);${n.read?'':'background:rgba(212,175,55,.06);'}">
+      <span style="font-size:1.2rem;">${ic}</span>
+      <span style="flex:1;">${n.text}</span>
+      ${n.read?'':'<button class="small-btn outline" onclick="markNotifRead(\''+d.id+'\')">تمت القراءة</button>'}
+    </div>`;
+  }).join('');
+  setMain(`${pageHeader('الإشعارات')}
+    <div class="panel">${rows || '<div class="empty-state"><div class="ic">🔔</div>مفيش إشعارات لسه</div>'}</div>`);
+}
+async function markNotifRead(id){
+  await db.collection('notifications').doc(id).update({read:true});
+  renderNotificationsPage();
+}
+PAGES.student.notifications = renderNotificationsPage;
+PAGES.parent.notifications = renderNotificationsPage;
+
+
+async function childGroups(){
+  if(!currentUser.childId) return [];
+  const snap = await db.collection('groups').where('studentIds','array-contains',currentUser.childId).get();
+  return snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+
+PAGES.parent.dashboard = async ()=>{
+  if(!currentUser.childId){
+    setMain(`${pageHeader('أهلًا، '+currentUser.name)}<div class="panel empty-state"><div class="ic">⚠️</div>معرفناش نلاقي حساب الطالب بالإيميل اللي سجلتي بيه. تأكدي إن ابنك عامل حساب على المنصة بنفس الإيميل.</div>`);
+    return;
+  }
+  const groups = await childGroups();
+  const hwSnap = await db.collection('homework').get();
+  const g = groups[0];
+  setMain(`${pageHeader('أهلًا، '+currentUser.name)}
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${g? (g.sessionsDone||0)+'/'+(g.sessionsTotal||8) : '-'}</div><div class="stat-label">حصص ابنك المنتهية</div></div>
+      <div class="stat-card"><div class="stat-num">${groups.length}</div><div class="stat-label">عدد المجموعات</div></div>
+      <div class="stat-card"><div class="stat-num">${hwSnap.size}</div><div class="stat-label">واجبات مطلوبة</div></div>
+    </div>`);
+};
+PAGES.parent.attendance = async ()=>{
+  const [groups, fees] = await Promise.all([childGroups(), getCenterFees()]);
+  const withHistory = await Promise.all(groups.map(async g=>{
+    const sessSnap = await db.collection('groups').doc(g.id).collection('sessions').orderBy('sessionNumber','asc').get();
+    const history = sessSnap.docs.map(d=>{
+      const s = d.data();
+      const present = s.records ? !!s.records[currentUser.childId] : null;
+      return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem;">
+        <span>حصة ${s.sessionNumber} — ${s.date}</span>
+        <span>${present===true?'<span style="color:var(--green);font-weight:700;">✔ حضر</span>':present===false?'<span style="color:var(--red);font-weight:700;">✘ غاب</span>':'-'}</span>
+      </div>`;
+    }).join('');
+    return {...g, history};
+  }));
+  setMain(`${pageHeader('حضور ابنك')}
+    ${scheduleTable(groups)}
+    ${withHistory.length? withHistory.map(g=>`<div class="panel"><h3 style="margin-top:0;color:var(--navy);">${g.subject}</h3>${attendDots(g.sessionsDone||0,g.sessionsTotal||8)}<p style="margin:10px 0;">${priceLine(g.pricePerSession, g.stage, fees)} ${paymentBadge(g, currentUser.childId)}</p>
+    <div style="margin-top:10px;">${g.history || '<p style="color:var(--text-mute);font-size:.85rem;">لسه مفيش حصص متسجلة</p>'}</div>
+    </div>`).join('')
+    : '<div class="panel empty-state"><div class="ic">✅</div>لا توجد بيانات حاليًا</div>'}`);
+};
+PAGES.parent.homework = async ()=>{
+  const groups = await childGroups();
+  const subjects = groups.map(g=>g.subject);
+  const snap = await db.collection('homework').orderBy('createdAt','desc').get();
+  const rows = snap.docs.filter(d=>subjects.includes(d.data().subject)).map(d=>{
+    const h = d.data();
+    return `<tr><td>${h.subject}</td><td>${h.title}</td><td>${h.due}</td></tr>`;
+  }).join('');
+  setMain(`${pageHeader('واجبات ابنك')}
+    <div class="panel">${rows? `<table><thead><tr><th>المادة</th><th>العنوان</th><th>الموعد</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty-state"><div class="ic">📝</div>لا توجد واجبات حاليًا</div>'}</div>`);
+};
+PAGES.parent.announcements = async ()=>{
+  const snap = await db.collection('announcements').orderBy('createdAt','desc').limit(30).get();
+  setMain(`${pageHeader('الإعلانات')}
+    <div class="panel">${snap.empty?'<div class="empty-state"><div class="ic">📢</div>مفيش إعلانات لسه</div>':
+    snap.docs.map(d=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);">${d.data().text} <span style="color:var(--text-mute);font-size:.8rem;">— ${d.data().date}</span></div>`).join('')}</div>`);
+};
+</script>
+</body>
+</html>
